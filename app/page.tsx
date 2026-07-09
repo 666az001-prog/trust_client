@@ -639,15 +639,6 @@ export default function Home() {
           </div>
         </div>
 
-        {clientsIncoherents.length > 0 && (
-          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
-            <p className="font-semibold">Données à nettoyer avant déploiement</p>
-            <p className="mt-1 text-yellow-100/80">
-              {clientsIncoherents.length} client{clientsIncoherents.length > 1 ? 's ont' : ' a'} un montant total à 0 avec un paiement enregistré.
-            </p>
-          </div>
-        )}
-
         {clientsARelancer.length > 0 && (
           <div className="rounded-lg border border-orange-500/30 bg-gradient-to-br from-gray-900 to-gray-800 p-4">
             <h3 className="mb-3 text-sm font-bold text-white">Clients à relancer</h3>
