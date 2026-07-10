@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-
 // ==================== TYPES ====================
 
 interface Client {
@@ -1254,155 +1253,70 @@ export default function Home() {
     )
   }
 
-  // ==================== MODAL REÇU CUSTOMISÉ ====================
   const renderReceiptModal = () => {
-    if (!showReceiptModal || !selectedClient) return null
-
-    // Récupération automatique du montant du paiement sélectionné
-    const montantVerse = selectedPayment ? selectedPayment.montant : 0
-    const totalProduit = selectedClient.prix_total
-    const reste = Math.max(0, totalProduit - selectedClient.totalPaye)
-
-    // États locaux temporaires pour l'édition à la volée dans le reçu
-    const [produit, setProduit] = useState('Article THE TRUST')
-    const [methode, setMethode] = useState(selectedPayment?.commentaire || 'Wave')
-    const [recuNum, setRecuNum] = useState(`#TR-${selectedPayment?.id?.slice(0, 6).toUpperCase() || '0000'}`)
-
-    // Formatage de la date du paiement
-    const datePaiement = selectedPayment?.date_paiement 
-      ? new Date(selectedPayment.date_paiement).toLocaleDateString('fr-FR')
-      : new Date().toLocaleDateString('fr-FR')
-    const heurePaiement = selectedPayment?.date_paiement
-      ? new Date(selectedPayment.date_paiement).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-      : '12:00'
-
-    // Fonction d'export en Image PNG
-    const downloadReceipt = () => {
-      if (typeof window !== 'undefined' && (window as any).html2canvas) {
-        const receipt = document.getElementById('receipt-card-print')
-        if (receipt) {
-          (window as any).html2canvas(receipt, { scale: 2 }).then((canvas: any) => {
-            const link = document.createElement('a')
-            link.download = `Recu_${selectedClient.nom}_${recuNum}.png`
-            link.href = canvas.toDataURL()
-            link.click()
-          })
-        }
-      }
-    }
+    if (!showReceiptModal || !selectedPayment || !selectedClient) return null
 
     return (
-      <>
-        <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" strategy="afterInteractive" />
-        <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-55 flex items-center justify-center p-4">
+        <div className="bg-white text-gray-900 rounded-xl w-full max-w-xs p-5 shadow-2xl font-mono text-xs relative border-4 border-double border-gray-300">
+          <button
+            onClick={() => {
+              setShowReceiptModal(false)
+              setSelectedPayment(null)
+            }}
+            className="absolute top-2 right-3 text-gray-500 hover:text-gray-900 text-lg print:hidden"
+          >
+            ✕
+          </button>
 
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-gray-900 border border-gray-700/60 rounded-2xl w-full max-w-4xl p-6 flex flex-col md:flex-row gap-6 shadow-2xl my-auto">
-            
-            {/* Panneau de gauche : Ajustements rapides */}
-            <div className="flex-1 flex flex-col gap-4">
-              <div className="flex justify-between items-center border-b border-gray-700 pb-2">
-                <h2 className="text-lg font-bold text-white">⚙️ Ajuster le reçu</h2>
-                <button onClick={() => setShowReceiptModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
-              </div>
+          <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
+            <h2 className="text-base font-bold tracking-wider">THE TRUST</h2>
+            <p className="text-[9px] text-gray-500 leading-none">Sneakers & Vêtements par Tempérament</p>
+            <p className="text-[10px]">Abidjan, Côte d&apos;Ivoire</p>
+          </div>
 
-              <div className="space-y-3 text-sm">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Numéro de reçu</label>
-                  <input type="text" value={recuNum} onChange={(e) => setRecuNum(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Libellé Produit(s)</label>
-                  <input type="text" value={produit} onChange={(e) => setProduit(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Méthode de paiement / Commentaire</label>
-                  <input type="text" value={methode} onChange={(e) => setMethode(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
-                </div>
-              </div>
+          <div className="py-3 space-y-1 border-b border-dashed border-gray-400 text-[11px]">
+            <p className="font-bold text-center mb-1">REÇU DE VERSEMENT</p>
+            <p><span className="text-gray-500">Client:</span> {selectedClient.nom}</p>
+            <p><span className="text-gray-500">Tel:</span> {selectedClient.telephone}</p>
+            <p><span className="text-gray-500">Date:</span> {selectedPayment.date_paiement ? new Date(selectedPayment.date_paiement).toLocaleString('fr-FR') : 'N/A'}</p>
+          </div>
 
-              <div className="mt-auto space-y-2">
-                <button onClick={downloadReceipt} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-lg transition text-sm">
-                  📥 Télécharger le Reçu (Image)
-                </button>
-                <button onClick={() => window.print()} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 rounded-lg transition text-sm">
-                  🖨️ Imprimer / PDF
-                </button>
-              </div>
+          <div className="py-3 space-y-1">
+            <div className="flex justify-between font-bold text-sm">
+              <span>VERSÉ :</span>
+              <span>{formatFCFA(selectedPayment.montant)}</span>
             </div>
+            {selectedPayment.commentaire && (
+              <p className="text-gray-600 italic mt-1 text-[10px]">Note : {selectedPayment.commentaire}</p>
+            )}
+          </div>
 
-            {/* Panneau de droite : Rendu Visuel Réel */}
-            <div className="flex justify-center items-center bg-gray-950 p-4 rounded-xl border border-gray-800 shrink-0">
-              <div 
-                id="receipt-card-print" 
-                className="w-[360px] bg-white text-black p-6 font-mono text-xs leading-relaxed shadow-lg select-none"
-                style={{ fontFamily: "'Courier Prime', monospace" }}
-              >
-                {/* Top Meta */}
-                <div className="flex justify-between text-[10px] text-gray-500 mb-4">
-                  <span>{datePaiement} {heurePaiement}</span>
-                  <span>Reçu - {selectedClient.nom}</span>
-                </div>
-
-                {/* Header */}
-                <div className="text-center mb-5">
-                  <h1 className="text-2xl font-bold tracking-widest m-0">THE TRUST</h1>
-                  <div className="text-[11px] text-gray-600 mt-0.5">Reçu de paiement échelonné</div>
-                  <div className="text-[10px] italic text-gray-500 mt-1">"Le style est permis à tous"</div>
-                </div>
-
-                <div className="text-center text-gray-400 my-2">----------------------------------</div>
-
-                {/* Client Details */}
-                <div className="mb-4 space-y-1 text-[13px]">
-                  <p><strong>Client :</strong> {selectedClient.nom}</p>
-                  <p><strong>Date :</strong> {datePaiement} à {heurePaiement}</p>
-                  <p><strong>Reçu N° :</strong> {recuNum}</p>
-                </div>
-
-                {/* Rows */}
-                <div className="flex justify-between my-2 text-[13px]">
-                  <span className="text-gray-500">Produit</span>
-                  <span className="font-bold">{produit}</span>
-                </div>
-                <div className="flex justify-between my-2 text-[13px]">
-                  <span className="text-gray-500">Méthode</span>
-                  <span className="font-bold">{methode}</span>
-                </div>
-
-                <div className="text-center text-gray-400 my-2">----------------------------------</div>
-
-                {/* Main Amount */}
-                <div className="text-center my-4">
-                  <div className="text-gray-500 text-[11px] mb-1">Montant versé</div>
-                  <div className="text-xl font-bold text-green-600">
-                    {new Intl.NumberFormat('fr-FR').format(montantVerse)} FCFA
-                  </div>
-                </div>
-
-                {/* Financial Totals */}
-                <div className="border-t border-gray-200 pt-2 space-y-1 text-[13px]">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Total Produit</span>
-                    <span>{new Intl.NumberFormat('fr-FR').format(totalProduit)} F</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Reste à payer</span>
-                    <span className="text-red-600 font-bold">{new Intl.NumberFormat('fr-FR').format(reste)} F</span>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="text-center mt-6 text-[11px] text-gray-600 leading-normal">
-                  Merci de votre confiance !<br />
-                  L'équipe The Trust
-                </div>
-              </div>
+          <div className="pt-3 border-t border-dashed border-gray-400 space-y-1 text-[11px] text-gray-700 bg-gray-50 p-2 rounded">
+            <div className="flex justify-between">
+              <span>Total Commande :</span>
+              <span>{formatFCFA(selectedClient.prix_total)}</span>
             </div>
+            <div className="flex justify-between">
+              <span>Déjà Réglé :</span>
+              <span>{formatFCFA(selectedClient.totalPaye)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
+              <span>Reste à Payer :</span>
+              <span>{formatFCFA(selectedClient.resteAPayer)}</span>
+            </div>
+          </div>
 
+          <div className="text-center pt-4 print:hidden">
+            <button
+              onClick={() => window.print()}
+              className="w-full bg-gray-950 text-white font-bold py-2 rounded shadow hover:bg-gray-800 transition text-[11px]"
+            >
+              🖨️ Imprimer / PDF
+            </button>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
