@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import Script from 'next/script'
+
 
 // ==================== TYPES ====================
 
