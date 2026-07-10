@@ -1271,7 +1271,7 @@ export default function Home() {
 
           <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
             <h2 className="text-base font-bold tracking-wider">THE TRUST</h2>
-            <p className="text-[9px] text-gray-500 leading-none">Sneakers & Vêtements par Tempérament</p>
+            <p className="text-[9px] text-gray-500 leading-none">Le Style Permis a Tous</p>
             <p className="text-[10px]">Abidjan, Côte d&apos;Ivoire</p>
           </div>
 
